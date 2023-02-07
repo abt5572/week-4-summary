@@ -1,6 +1,6 @@
 ---
-title: "Weekly Summary Template"
-author: "Author Name"
+title: "Weekly Summary 4"
+author: "Alvaro Tapia"
 title-block-banner: true
 title-block-style: default
 toc: true
@@ -10,67 +10,159 @@ format: html
 
 ---
 
-## Tuesday, Jan 17
+## Tuesday, Jan 31
 
 ::: {.callout-important}
 ## TIL
 
-Include a _very brief_ summary of what you learnt in this class here. 
+In this weekday we learned about statistical learning, simple linear regression and multiple regression. The packages that we needed to review and that we used for this week were: Tidyverse, ISLR2, cowplot, kableExtra, and htmlwidgets.
 
-Today, I learnt the following concepts in class:
+1. We learned that statistical learning is a dataset composed by covariates and deoendent variables/response.There are different flavors or clasifications in statistical learning:
+Supervised learning
+Unsupervised learning
+Semi-supervised learning
+Reinforcement learning 
 
-1. Item 1
-1. Item 2
-1. Item 3
-:::
+An example for datasets can be the teen birth rate vs poverty. Here we are predicting the birth rate as a function of poverty rate.
 
-Provide more concrete details here. You can also use footenotes[^footnote] if you like
+```{R}
+library(readr)
+df <- read_tsv("https://online.stat.psu.edu/stat462/sites/onlinecourses.science.psu.edu.stat462/files/data/poverty/index.txt")
 
-```{R results='hide'}
-#| output: false
-library(dplyr)
-library(purrr)
+colnames(df) <- tolower(colnames(df))
+
+x <- df$povpct
+y <- df$brth15to17
+plot(x, y)
 ```
 
+2. We then learned how to name both Axis and color the dots.
 
-For example: 
-in class we learnt we learnt about the `map` function from the `purrr` package. 
-
-
-```{R results='hide', fig.width=7, fig.height=7}
-par(mfrow=c(3, 3), mar=c(3.5, 3.5, 2, 1), mgp=c(2.4, 0.8, 0))
-map(1:9, function(i)rnorm(1000) %>% hist(., main=i, col=i))
+```{R}
+plt <- function(){
+plot(x,y, pch=20, xlab = "Pov %", ylab = "Birth rate (15 – 17)")
+}
+plt()
 ```
 
+3. After that, we learned how to create a curve in this case colored with red and created different plots for all the variables in the matrix
 
+```{R}
+b0 <- c(-2, 0, 2)
+b1 <- c(0, 1, 2)
 
-## Thursday, Jan 19
+par(mfrow=c(3,3))
 
+for(B0 in b0){
+	for(B1 in b1){
+		plt()
+		curve(B0 + B1 * x, 0, 30, add=T, col="red")
+		title(main=paste("b0 = ", B0, " and b1= ", B1))
+	}
+}
+```
 
+4. Finally, we learned how to create a Least squares estimator and we understood how to sum residuals.
+
+```{R}
+b0 <- 10
+b1 <- 1.2
+
+yhat <- b0 + b1 * x
+
+plt()
+curve(b0 + b1 * x, 0, 30, add=T, col="red")
+segments(x, y, x, yhat)
+
+resids <- abs(y - yhat)^2
+ss_resids <- sum(resids)
+title(main = paste("b0, b1, ss_residuals = ", b0, b1, ss_resids, sep=","))
+```
+
+```{R}
+model <- lm(y~x)
+sum(residuals(model)^2)
+```
+
+## Thursday, Feb 02
 
 ::: {.callout-important}
 ## TIL
 
-Include a _very brief_ summary of what you learnt in this class here. 
+In this class we did a lot of things, such as learning about simple and multiple linear regression, also about the null and alternate hypotheses. Our objective was to find the best linear model to fit y ~ x. We then found that:
+Ho: B1 = 0, and H1: B1 =/ 0
 
-Today, I learnt the following concepts in class:
+We learned the following concepts in class:
 
-1. Item 1
-1. Item 2
-1. Item 3
-:::
+1. That a linear model in "R" is called using lm()
 
-Provide more concrete details here, e.g., 
+2. Here we do more statistical learning
 
-In class we learnt how to use the `map` function to create multiple regression diagnostic plots
-
-```{R results='hide', fig.height=4}
-par(mfcol=c(2, 3), mar=c(3.5, 3.5, 2, 1), mgp=c(2.4, 0.8, 0))
-mtcars %>%
-  split(.$cyl) %>%
-  map(~ lm(mpg ~ wt, data = .x)) %>%
-  map(function(x)plot(x, which=c(1, 2)))
+```{R}
+x <- seq(0 ,5, length = 100)
+b0 <- 1
+b1 <- 3
+y1 <- b0 + b1 *x + rnorm(100)
+y2 <- b0 + b1 *x + rnorm(100) * 3
+par(mfrow=c(1,2))
+plot(x,y1)
+plot(x,y2)
 ```
 
+```{R}
+model1 <- lm(y1 ~ x)
+model2 <- lm(y2 ~ x)
 
-[^footnote]: You can include some footnotes here
+plot(x, y1)
+curve(coef(model1)[1] + coef(model1)[2] * x, add=T, col="red")
+plot(x,y2)
+curve(
+	coef(model2)[1] + coef(model2)[2] * x,
+	add=T, col="red"
+)
+```
+
+3. Some other important terms are the following:
+Sum of squares of residuals
+Sum of squares for regression
+Sum of squares total
+
+```{R}
+summary(model1)
+summary(model2)
+```
+
+4. The last thing in class is that we learned about simple linear regression **prediction**. It’s the ability of a model to predict values for “unseen” data. Now I'll show what the prediction functions does.
+
+We plot the variables
+
+```{R}
+x <- df$povpct
+y <- df$brth15to17
+plt()
+```
+
+We locate the point where the new variable will be added
+
+```{R}
+plt()
+abline(v=21, col="green")
+lines(x, fitted(lm(y~x)), col="red")
+```
+
+We use the predict method to see where it will be displayed
+
+```{R}
+new_x <- data.frame(x = c(21))
+new_y <- predict(model, new_x)
+new_y
+```
+
+And finllay, we input the predicted variable into the plot.
+
+```{R}
+plt()
+abline(v=21, col="green")
+lines(x, fitted(lm(y~x)), col="red")
+points(new_x, new_y, col="purple")
+```
