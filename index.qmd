@@ -1,6 +1,6 @@
 ---
-title: "Weekly Summary Template"
-author: "Author Name"
+title: "Weekly Summary 5"
+author: "Alvaro Tapia"
 title-block-banner: true
 title-block-style: default
 toc: true
@@ -10,67 +10,186 @@ format: html
 
 ---
 
-## Tuesday, Jan 17
+## Tuesday, Feb 07
 
 ::: {.callout-important}
 ## TIL
 
-Include a _very brief_ summary of what you learnt in this class here. 
+In this weekday we learned about the interpretation of B0 and B1, how to work with species and also about the regression coefficients. In the same way we also learned about the categorial covariates. FInally we learned how to interpret coefficients and change slopes.
 
-Today, I learnt the following concepts in class:
+1. As a first instance, we learned What is the interpretation of B0 and B1
+$$
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+$$
 
-1. Item 1
-1. Item 2
-1. Item 3
-:::
+Where:
+y_i are the response, x_i is the covariate, epsilon is the error, the betas are the regression coefficients, i are the indices for observations.
 
-Provide more concrete details here. You can also use footenotes[^footnote] if you like
+Let's consider this example:
 
-```{R results='hide'}
-#| output: false
-library(dplyr)
-library(purrr)
+```{R}
+#library(ggplot2)
+library(knitr)
+library(magrittr)
+mtcars %>% head() %>% kable()
 ```
 
+After that, we just applied what we learned last week to display it:
 
-For example: 
-in class we learnt we learnt about the `map` function from the `purrr` package. 
+```{R}
+x <- mtcars$hp
+y <- mtcars$mpg
 
+plot(x, y, pch=20, xlab = "HP", ylab = "MPG"
 
-```{R results='hide', fig.width=7, fig.height=7}
-par(mfrow=c(3, 3), mar=c(3.5, 3.5, 2, 1), mgp=c(2.4, 0.8, 0))
-map(1:9, function(i)rnorm(1000) %>% hist(., main=i, col=i))
+model <- lm(y~x)
+summary (model)
 ```
 
+For intercept this means that a hypothetical car with hp = 0 will have mpg = 30.09 = $\beta_0$
 
+2. We also learned about Categorical covariates. Until now everything was single regression. Then we also confirmed that "cyl" is categorical
 
-## Thursday, Jan 19
+```{R}
+iris %>% head() %>% kable()
+```
 
+```{R}
+iris %
+plot(x, y)
+```
 
+3. We learned how to check the relationship between species and spal.length. In this sense we learned that this allows us to understand the relationship better between two variables.
+
+```{R}
+y <- iris$Sepal.Length
+x <- iris$Species
+
+boxplot(Sepal.Length ~ Species, iris)
+```
+
+Running another linear regression model
+
+```{R}
+y <- iris$Sepal.Length
+cat_model <- lm(Sepal.Length ~ Species, iris)
+cat_model
+```
+
+4. After that, we understood that even if x is categorical we can still write down the regression model like this:
+$$
+y_i = \beta_0 + \beta_1 x_i
+$$
+
+There are 3 different fundamental models: setosa, versicolor, virginica.
+
+5. Then we interpret the coefficients:
+
+$\beta_0$ is the expected y value when x belongs to the base category.
+In regard to the slopes, we have that
+
+$\beta_1$ with the name 'Species.versicolor' represents the following:
+
+'(Intercept)' = $y(x = \texttt{setosa})$
+'Species.versicolor' = $y(x  = \texttt{versicolor}) - y(x = \texttt{setosa})$
+'Species.virginica' = $y(x  = \texttt{virginica}) - y(x = \texttt{setosa})$
+
+6. Finally, we learned how to reorder the factors: We took setosa as a baseline level, but indeated we wanted virginica to be the baseline level. Reordering first:
+
+```{R}
+iris$Species
+iris$Species <- relevel (iris$Species, "virginica")
+iris$Species
+```
+
+```{R}
+new_cat_model <- lm(Sepal.Length ~ Species, iris)
+new_cat_model
+```
+
+So now the slopes are setosa.
+
+## Thursday, Feb 09
 
 ::: {.callout-important}
 ## TIL
 
-Include a _very brief_ summary of what you learnt in this class here. 
 
-Today, I learnt the following concepts in class:
+In this class we learned more about
 
-1. Item 1
-1. Item 2
-1. Item 3
-:::
+We learned the following concepts in class:
 
-Provide more concrete details here, e.g., 
+1. We first learned how to described the model. We created a new table with Credit. We also installed plotly for later usage.
 
-In class we learnt how to use the `map` function to create multiple regression diagnostic plots
+```{R}
+library(plotly)
+```
 
-```{R results='hide', fig.height=4}
-par(mfcol=c(2, 3), mar=c(3.5, 3.5, 2, 1), mgp=c(2.4, 0.8, 0))
-mtcars %>%
-  split(.$cyl) %>%
-  map(~ lm(mpg ~ wt, data = .x)) %>%
-  map(function(x)plot(x, which=c(1, 2)))
+```{R}
+library(ISLR2)
+attach(Credit)
+
+df <- Credit %>% tibble()
+colnames(df) <- tolower(colnames(df))
+df
+```
+
+2. After that, we understood how to relate this 3 columns in a plot. We took 3 columns of the dataframe as an example. So we can see the following 3 dimension plot:
+
+```{R}
+df3 <- df %>% select(income, rating, limit)
+df3
+```
+
+```{R}
+fig <- plot_ly(df3, x=~income, y=~rating, z=~limit)
+fig %>% add_markers()
+```
+
+3. We then learned how to create a regression model for this plot
+
+```{R}
+model <- lm(limit ~ income + rating, df3)
+model
+```
+
+4. Understanding what we can do with plotly
+
+PHOTO
+
+5. After that we learned how to interpret the coefficients:
+
+beta_0 is the expected value of y when income = 0 and rating = 0
+beta_1 is saying that if rating is held constant and income changes by 1 unit, then the corresponding change in the limit is 0.5573. This is very important because how can you change the income without changing or affecting the other.
+THen beta_2 is saying that if income is held constant and rating changes by 1 unit, then the corresponding change is kimir 14.77
+
+```{R}
+summary(model)
 ```
 
 
-[^footnote]: You can include some footnotes here
+
+Example:
+```{R}
+library(httpgd)
+xx <- seq(0,1 ,;ength.out=100)
+b0 <_ 0.00001
+b1 <- 0.00001
+y <- bo + b1 *x + rnorm(100) * 0.7
+plot(x, y, pch = 20)
+
+model <- lm(y ~ x)
+summary(model)
+```
+
+6. Finally we learned about multiple regression with interaction terms. Example:
+
+```{R}
+library(ISLR2)
+library(dyplr)
+library(ggplot2)
+
+attatch(ISLR::Credit)
+df <- Credit %>% tibble() %>% rename_all
+
+```
